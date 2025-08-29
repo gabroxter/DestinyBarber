@@ -51,7 +51,7 @@ function openPromoModal() {
             `,
             html: `
                 <img src="img/promo_barbero.jpeg" alt="Promoción Barbero" style="width:100%;height:auto;" />
-                <a class="header_btn btn theme-element" href="indexPrincipal.html">Reservar ahora</a>
+                <a class="header_btn btn theme-element" href="Principal.html">Reservar ahora</a>
             `,
             customClass: {
                 popup: 'promo_popup',
@@ -61,6 +61,6 @@ function openPromoModal() {
                 container: 'promo_popup-container'
             },
         })
-        isShown = true;
+        isShown = false
     }
 }
