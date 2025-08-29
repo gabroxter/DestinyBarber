@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Barbería</title>
+    <link rel="stylesheet" href="/CSS/admin-styles.css">
+</head>
+<body>
+
+    <header>
+        <h1>Panel de Administración</h1>
+    </header>
+
+    <main>
+        <section class="admin-panel">
+            <h2>Gestión de Reservas</h2>
+            <button id="add-btn">Añadir Nueva Reserva</button>
+            <button id="export-btn">Exportar Reservas</button>
+            <input type="file" id="import-file" accept=".csv,.txt" style="display:none;">
+            <button id="import-btn">Importar Reservas</button>
+            <table id="reservations-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>Barbero</th>
+                        <th>Servicio</th>
+                        <th>Horario</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="form-section" style="display: none;">
+            <h2>Detalles de la Reserva</h2>
+            <form id="reservation-form">
+                <input type="hidden" id="reservation-id">
+                <label for="client-name">Cliente:</label>
+                <input type="text" id="client-name" required>
+
+                <label for="barber-select">Barbero:</label>
+                <select id="barber-select" required>
+                    <option value="Juan Pérez">Juan Pérez</option>
+                    <option value="Ana Gómez">Ana Gómez</option>
+                </select>
+
+                <label for="service-select">Servicio:</label>
+                <select id="service-select" required>
+                    <option value="Corte de Cabello">Corte de Cabello</option>
+                    <option value="Corte y Barba">Corte y Barba</option>
+                </select>
+
+                <label for="date-input">Fecha:</label>
+                <input type="date" id="date-input" required>
+
+                <label for="time-input">Hora:</label>
+                <input type="time" id="time-input" required>
+
+                <button type="submit" id="save-btn">Guardar Reserva</button>
+                <button type="button" id="cancel-btn">Cancelar</button>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        // Utilidad para obtener y guardar reservas en localStorage
+        function getReservas() {
+            return JSON.parse(localStorage.getItem('reservasBarberia') || '[]');
+        }
+        function setReservas(reservas) {
+            localStorage.setItem('reservasBarberia', JSON.stringify(reservas));
+        }
+
+        // Renderizar tabla de reservas
+        function renderTable() {
+            const tbody = document.querySelector('#reservations-table tbody');
+            tbody.innerHTML = '';
+            const reservas = getReservas();
+            reservas.forEach((r) => {
+                const tr = document.createElement('tr');
+                // Enlace WhatsApp si hay celular
+                let clienteHtml = r.cliente || r.nombre || '';
+                if(r.celular) {
+                    clienteHtml += `<br><a href='https://wa.me/${r.celular.replace(/[^0-9]/g, '')}' target='_blank' style='color:#25D366;text-decoration:underline;font-weight:bold;'>${r.celular}</a>`;
+                }
+                tr.innerHTML = `
+                    <td>${r.id || ''}</td>
+                    <td>${clienteHtml}</td>
+                    <td>${r.barbero || ''}</td>
+                    <td>${r.servicio || ''}</td>
+                    <td>${r.horario || ''}</td>
+                    <td>
+                        <button class="edit-btn">Editar</button>
+                        <button class="delete-btn">Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            addRowListeners();
+        }
+
+        // Mostrar formulario para añadir o editar
+        document.getElementById('add-btn').addEventListener('click', function() {
+            document.getElementById('form-section').style.display = 'block';
+            document.getElementById('reservation-form').reset();
+            document.getElementById('reservation-id').value = '';
+        });
+
+        document.getElementById('cancel-btn').addEventListener('click', function() {
+            document.getElementById('form-section').style.display = 'none';
+        });
+
+        function addRowListeners() {
+            document.querySelectorAll('.edit-btn').forEach(button => {
+                button.onclick = function() {
+                    document.getElementById('form-section').style.display = 'block';
+                    const row = this.closest('tr');
+                    document.getElementById('reservation-id').value = row.cells[0].innerText;
+                    document.getElementById('client-name').value = row.cells[1].innerText;
+                    document.getElementById('barber-select').value = row.cells[3].innerText;
+                    document.getElementById('service-select').value = row.cells[4].innerText;
+                    // Separar horario en fecha y hora si posible
+                    let horario = row.cells[5].innerText;
+                    let fecha = '';
+                    let hora = '';
+                    if(horario.includes(' ')) {
+                        let parts = horario.split(' ');
+                        fecha = parts[0];
+                        hora = parts.slice(1).join(' ');
+                    }
+                    document.getElementById('date-input').value = fecha;
+                    document.getElementById('time-input').value = hora;
+                }
+            });
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.onclick = function() {
+                    if (confirm('¿Estás seguro de que quieres eliminar esta reserva?')) {
+                        const row = this.closest('tr');
+                        const id = row.cells[0].innerText;
+                        let reservas = getReservas();
+                        reservas = reservas.filter(r => String(r.id) !== String(id));
+                        setReservas(reservas);
+                        renderTable();
+                    }
+                }
+            });
+        }
+
+        // Guardar reserva (añadir o modificar)
+        document.getElementById('reservation-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            let reservas = getReservas();
+            const id = document.getElementById('reservation-id').value || Date.now();
+            const cliente = document.getElementById('client-name').value;
+            const barbero = document.getElementById('barber-select').value;
+            const servicio = document.getElementById('service-select').value;
+            const fecha = document.getElementById('date-input').value;
+            const hora = document.getElementById('time-input').value;
+            // Buscar correo si existe en reservas previas
+            let correo = '';
+            const prev = reservas.find(r => String(r.id) === String(id));
+            if(prev && prev.correo) correo = prev.correo;
+            // Si no, dejar vacío o pedir en el formulario si lo deseas
+            const horario = fecha ? (fecha + ' ' + hora) : hora;
+            const nuevaReserva = {id, cliente, correo, barbero, servicio, horario};
+            // Si existe, modificar
+            const idx = reservas.findIndex(r => String(r.id) === String(id));
+            if(idx >= 0) reservas[idx] = nuevaReserva;
+            else reservas.push(nuevaReserva);
+            setReservas(reservas);
+            renderTable();
+            document.getElementById('form-section').style.display = 'none';
+        });
+
+        // Exportar reservas a CSV
+        document.getElementById('export-btn').addEventListener('click', function() {
+            const reservas = getReservas();
+            if(reservas.length === 0) return alert('No hay reservas para exportar.');
+            let csv = 'ID,Cliente,Correo,Barbero,Servicio,Horario\n';
+            reservas.forEach(r => {
+                csv += `${r.id || ''},${r.cliente || ''},${r.correo || ''},${r.barbero || ''},${r.servicio || ''},${r.horario || ''}\n`;
+            });
+            const blob = new Blob([csv], {type: 'text/csv'});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'reservas_barberia.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // Importar reservas desde CSV
+        document.getElementById('import-btn').addEventListener('click', function() {
+            document.getElementById('import-file').click();
+        });
+        document.getElementById('import-file').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const text = evt.target.result;
+                const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+                const reservas = [];
+                for(let i=1; i<lines.length; i++) { // Saltar cabecera
+                    const parts = lines[i].split(',');
+                    if(parts.length >= 6) {
+                        reservas.push({
+                            id: parts[0],
+                            cliente: parts[1],
+                            correo: parts[2],
+                            barbero: parts[3],
+                            servicio: parts[4],
+                            horario: parts[5]
+                        });
+                    }
+                }
+                setReservas(reservas);
+                renderTable();
+                alert('Reservas importadas correctamente.');
+            };
+            reader.readAsText(file);
+        });
+
+        // Inicializar tabla al cargar
+        renderTable();
+    </script>
+</body>
+</html>

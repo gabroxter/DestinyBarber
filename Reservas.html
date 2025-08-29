@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reserva tu Cita en la Barbería</title>
+    <link rel="stylesheet" href="CSS/styles.css">
+</head>
+<body>
+
+    <header>
+        <h1>Agenda tu Cita</h1>
+    </header>
+
+    <main>
+        <section id="login-register-section">
+            <h2>Datos de contacto</h2>
+            <form id="auth-form">
+                <input type="email" id="email" placeholder="Correo electrónico" required>
+                <input type="text" id="nombre" placeholder="Nombre completo" required>
+                <input type="tel" id="celular" placeholder="Número de celular" required pattern="[0-9]{8,15}">
+                <button type="submit">Continuar</button>
+            </form>
+        </section>
+
+        <section id="booking-section">
+            <h2>Servicios y Barberos</h2>
+            <div class="card-container">
+                <div class="card">
+                    <img src="barbero1.jpg" alt="Barbero 1">
+                    <h3>Juan Pérez</h3>
+                    <p>Especialista en cortes clásicos.</p>
+                    <button class="select-barber" data-barber="juan">Seleccionar</button>
+                </div>
+                <div class="card">
+                    <img src="barbero2.jpg" alt="Barbero 2">
+                    <h3>Ana Gómez</h3>
+                    <p>Experta en degradados y barba.</p>
+                    <button class="select-barber" data-barber="ana">Seleccionar</button>
+                </div>
+            </div>
+
+            <div id="service-selection" style="display: none;">
+                <h3>Elige tu Servicio</h3>
+                <select id="service-select">
+                    <option value="">-- Selecciona un servicio --</option>
+                    <option value="corte-cabello">Corte de Cabello</option>
+                    <option value="corte-barba">Arreglo de Barba</option>
+                    <option value="corte-completo">Corte y Arreglo de Barba</option>
+                </select>
+            </div>
+
+            <div id="schedule-selection" style="display: none;">
+                <h3>Selecciona un Horario</h3>
+                <ul id="schedule-list">
+                    <li>10:00 AM <button class="select-time">Reservar</button></li>
+                    <li>11:30 AM <button class="select-time">Reservar</button></li>
+                    <li>02:00 PM <button class="select-time">Reservar</button></li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="confirmation-section" style="display: none;">
+            <h2>¡Cita Reservada!</h2>
+            <p>Tu cita ha sido agendada con éxito.</p>
+            <p>Detalles de la cita:</p>
+            <ul id="confirmation-details"></ul>
+            <button id="back-home">Volver al inicio</button>
+        </section>
+
+        <section id="reserved-section" style="display: none;">
+            <h2>Citas Reservadas</h2>
+            <ul id="reserved-list"></ul>
+            <button id="back-home2">Volver al inicio</button>
+        </section>
+    </main>
+    
+    <script>
+    // Estado de citas reservadas
+    let reservedAppointments = JSON.parse(localStorage.getItem('reservasBarberia') || '[]');
+
+        document.getElementById('auth-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            document.getElementById('login-register-section').style.display = 'none';
+            document.getElementById('booking-section').style.display = 'block';
+            document.getElementById('reserved-section').style.display = 'none';
+        });
+
+        document.querySelectorAll('.select-barber').forEach(button => {
+            button.addEventListener('click', function() {
+                document.getElementById('service-selection').style.display = 'block';
+            });
+        });
+
+        document.getElementById('service-select').addEventListener('change', function() {
+            if(this.value) {
+                document.getElementById('schedule-selection').style.display = 'block';
+            }
+        });
+
+        document.querySelectorAll('.select-time').forEach(button => {
+            button.addEventListener('click', function() {
+                document.getElementById('booking-section').style.display = 'none';
+                document.getElementById('confirmation-section').style.display = 'block';
+                const barberName = document.querySelector('.card h3').innerText;
+                const service = document.getElementById('service-select').value;
+                const time = this.parentNode.firstChild.textContent;
+                const email = document.getElementById('email').value;
+                const nombre = document.getElementById('nombre').value;
+                const celular = document.getElementById('celular').value;
+                const id = Date.now();
+                const verificacion = Math.floor(1000 + Math.random() * 9000); // 4 dígitos
+                document.getElementById('confirmation-details').innerHTML = `
+                    <li><strong>Correo:</strong> ${email}</li>
+                    <li><strong>Nombre:</strong> ${nombre}</li>
+                    <li><strong>Celular:</strong> ${celular}</li>
+                    <li><strong>Barbero:</strong> ${barberName}</li>
+                    <li><strong>Servicio:</strong> ${service}</li>
+                    <li><strong>Horario:</strong> ${time}</li>
+                    <li><strong>Código de verificación:</strong> <span style="font-size:1.2em;color:#fc4a1a;">${verificacion}</span></li>
+                `;
+                // Guardar cita en localStorage
+                reservedAppointments.push({id, correo: email, nombre, celular, barbero: barberName, servicio: service, horario: time, verificacion});
+                localStorage.setItem('reservasBarberia', JSON.stringify(reservedAppointments));
+            });
+        });
+
+        // Botón volver al inicio desde confirmación
+        document.getElementById('back-home').addEventListener('click', function() {
+            document.getElementById('confirmation-section').style.display = 'none';
+            document.getElementById('login-register-section').style.display = 'block';
+            document.getElementById('service-selection').style.display = 'none';
+            document.getElementById('schedule-selection').style.display = 'none';
+        });
+
+        // Apartado para ver citas reservadas
+        const reservedSectionBtn = document.createElement('button');
+        reservedSectionBtn.textContent = 'Ver citas reservadas';
+        reservedSectionBtn.style.marginBottom = '10px';
+        reservedSectionBtn.id = 'show-reserved';
+        document.querySelector('main').insertBefore(reservedSectionBtn, document.getElementById('booking-section'));
+
+        reservedSectionBtn.addEventListener('click', function() {
+            document.getElementById('login-register-section').style.display = 'none';
+            document.getElementById('booking-section').style.display = 'none';
+            document.getElementById('confirmation-section').style.display = 'none';
+            document.getElementById('reserved-section').style.display = 'block';
+            mostrarFormularioVerificacion();
+        });
+
+        function mostrarCitasReservadas() {
+            // Esta función ya no se llama directamente, ahora se usa mostrarFormularioVerificacion
+        }
+
+        function mostrarFormularioVerificacion() {
+            const list = document.getElementById('reserved-list');
+            list.innerHTML = `
+                <form id="verificacion-form" style="display:flex;flex-direction:column;gap:10px;max-width:350px;margin:auto;">
+                    <input type="email" id="verif-email" placeholder="Correo electrónico" required>
+                    <input type="text" id="verif-codigo" placeholder="Código de verificación" required maxlength="4" pattern="[0-9]{4}">
+                    <button type="submit">Ver mi reserva</button>
+                    <span id="verif-error" style="color:#fc4a1a;display:none;">Datos incorrectos o reserva no encontrada.</span>
+                </form>
+                <ul id="verif-result"></ul>
+            `;
+            document.getElementById('verificacion-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const email = document.getElementById('verif-email').value.trim();
+                const codigo = document.getElementById('verif-codigo').value.trim();
+                reservedAppointments = JSON.parse(localStorage.getItem('reservasBarberia') || '[]');
+                const cita = reservedAppointments.find(r => r.correo === email && String(r.verificacion) === codigo);
+                const result = document.getElementById('verif-result');
+                if(cita) {
+                    document.getElementById('verif-error').style.display = 'none';
+                    result.innerHTML = `
+                        <li><strong>Correo:</strong> ${cita.correo}</li>
+                        <li><strong>Nombre:</strong> ${cita.nombre}</li>
+                        <li><strong>Celular:</strong> ${cita.celular}</li>
+                        <li><strong>Barbero:</strong> ${cita.barbero}</li>
+                        <li><strong>Servicio:</strong> ${cita.servicio}</li>
+                        <li><strong>Horario:</strong> ${cita.horario}</li>
+                        <li><strong>Código de verificación:</strong> ${cita.verificacion}</li>
+                    `;
+                } else {
+                    document.getElementById('verif-error').style.display = 'block';
+                    result.innerHTML = '';
+                }
+            });
+        }
+        
+
+        // Botón volver al inicio desde citas reservadas
+        document.getElementById('back-home2').addEventListener('click', function() {
+            document.getElementById('reserved-section').style.display = 'none';
+            document.getElementById('login-register-section').style.display = 'block';
+            document.getElementById('service-selection').style.display = 'none';
+            document.getElementById('schedule-selection').style.display = 'none';
+        });
+    </script>
+</body>
+</html>

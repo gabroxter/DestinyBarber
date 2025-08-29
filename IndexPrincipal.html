@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barbería - Página Principal</title>
+    <link rel="stylesheet" href="CSS/styles.css">
+</head>
+<body>
+    <header>
+        <img src="logo-barberia.png" alt="Logo Barbería" class="logo">
+        <h1>Bienvenido a Barbería Estilo</h1>
+    </header>
+    <div class="welcome">
+        <p>¡Descubre el mejor lugar para tu corte y arreglo de barba!<br>
+        Reserva tu cita, consulta tus reservas o simplemente conoce más sobre nosotros.<br>
+        Atención profesional, ambiente moderno y resultados garantizados.</p>
+    </div>
+    <main>
+        <div class="main-options">
+            <div class="main-card">
+                <h2>Reservar una Cita</h2>
+                <p>Agenda tu cita con nuestros barberos profesionales.</p>
+                <a href="Reservas.html"><button>Ir a Reservas</button></a>
+            </div>
+            <div class="main-card" id="admin-access-card">
+                <h2>Ver Reservas</h2>
+                <p>Consulta y gestiona tus reservas existentes.</p>
+                <button id="admin-access-btn">Ver Reservas</button>
+                <div id="admin-login-modal" style="display:none; margin-top:18px;">
+                    <form id="admin-login-form" style="display:flex; flex-direction:column; gap:10px; align-items:center;">
+                        <input type="email" id="admin-email" placeholder="Correo administrador" required style="padding:8px; border-radius:6px; border:1px solid #fc4a1a;">
+                        <input type="password" id="admin-password" placeholder="Contraseña" required style="padding:8px; border-radius:6px; border:1px solid #fc4a1a;">
+                        <button type="submit" style="padding:8px 18px; border-radius:6px; background:#fc4a1a; color:#fff; border:none;">Acceder</button>
+                        <span id="admin-error" style="color:#fc4a1a; font-size:0.98rem; display:none;">Credenciales incorrectas</span>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer style="text-align:center; margin-top:40px; color:#fc4a1a;">
+        <p>&copy; 2025 Barbería Estilo. Todos los derechos reservados.</p>
+    </footer>
+
+    <script>
+    // Acceso administrador con verificación
+    const adminBtn = document.getElementById('admin-access-btn');
+    const adminModal = document.getElementById('admin-login-modal');
+    const adminForm = document.getElementById('admin-login-form');
+    const adminError = document.getElementById('admin-error');
+
+    adminBtn.addEventListener('click', function() {
+        adminModal.style.display = 'block';
+    });
+
+    adminForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('admin-email').value.trim();
+        const pass = document.getElementById('admin-password').value.trim();
+        if(email === 'gabo@gmail.com' && pass === '12345') {
+            window.location.href = 'Administrador.html';
+        } else {
+            adminError.style.display = 'block';
+        }
+    });
+    </script>
+</body>
+</html>
