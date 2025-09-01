@@ -8095,12 +8095,12 @@ button.swiper-pagination-bullet {
 
 .pickmeup .pmu-instance .pmu-today {
     background: #202020;
-    color: #eb1616
+    color: #1782C5
 }
 
 .pickmeup .pmu-instance .pmu-button:hover {
     background: rgba(0,0,0,0);
-    color: #eb1616
+    color: #1782C5
 }
 
 .pickmeup .pmu-instance .pmu-not-in-month {
@@ -8113,7 +8113,7 @@ button.swiper-pagination-bullet {
 }
 
 .pickmeup .pmu-instance .pmu-selected {
-    background: #eb1616;
+    background: #1782C5;
     color: #eee
 }
 
@@ -8261,7 +8261,7 @@ button.swiper-pagination-bullet {
 }
 
 .custom-select-option.is-selected {
-    background: #eb1616;
+    background: #1782C5;
     color: #fff
 }
 
